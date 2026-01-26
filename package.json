@@ -1,13 +1,19 @@
 {
+  "name": "worldgame-news",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
   "dependencies": {
     "fs": "^0.0.1-security",
-    "google-news-scraper": "^2.7.0",
-    "rss-parser": "^3.13.0"
-  },
-  "name": "worldgame-news",
-  "version": "1.0.0",
-  "type": "module",
-  "scripts": {
-    "start": "node index.js"
+    "nuxt": "^4.3.0",
+    "rss-parser": "^3.13.0",
+    "vue": "^3.5.27",
+    "vue-router": "^4.6.4"
   }
 }
