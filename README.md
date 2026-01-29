@@ -1,75 +1,40 @@
-# Nuxt Minimal Starter
+# 🎮 WorldGame News
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Aplicação web desenvolvida para **acompanhar as melhores notícias, atualizações e lançamentos do mundo dos videogames**, reunindo conteúdos de diferentes fontes em um único lugar.
 
-## Setup
+O projeto tem foco em **desempenho**, **experiência do usuário** e **atualização constante** das informações de jogos.
 
-Make sure to install dependencies:
+---
+## 🚧 *Atenção: Projeto em Desenvolvimento...*
 
-```bash
-# npm
-npm install
+---
 
-# pnpm
-pnpm install
+## 🚀 Funcionalidades
 
-# yarn
-yarn install
+- 📰 Listagem de notícias do mundo dos games
+- 🆕 Acompanhamento de lançamentos recentes
+- 🔎 Busca por notícias e conteúdos específicos
+- 🔀 Download de mods mais recentes
+- 📊 Organização por data e relevância
+- 🌐 Consumo de dados via API própria
 
-# bun
-bun install
-```
+---
 
-## Development Server
+## 🛠️ Tecnologias Utilizadas
 
-Start the development server on `http://localhost:3000`:
+### Frontend
+- **Nuxt** (framework baseado em Vue)
+- **Vue**
+- **JavaScript**
+- **CSS**
 
-```bash
-# npm
-npm run dev
+### Backend
+- **Node.js**
+- API própria para:
+    - Busca de notícias
+    - Normalização dos dados
+    - Integração com fontes externas
 
-# pnpm
-pnpm dev
+---
 
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## 👾 *Em breve atualizações...*
