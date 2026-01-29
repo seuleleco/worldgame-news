@@ -7,7 +7,7 @@ const parser = new Parser({
     }
 });
 
-async function buscarNoticias(termo) {
+export async function searchNews(termo) {
     try {
         const query = `
 (
@@ -21,7 +21,6 @@ async function buscarNoticias(termo) {
 site:tecmundo.com.br OR
 site:canaltech.com.br OR
 site:adrenaline.com.br OR
-site:omelete.com.br OR
 site:voxel.com.br
 )
 -site:pinterest.com
@@ -32,30 +31,32 @@ site:voxel.com.br
  -aposta 
  -cassino
 `;
-
         const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=pt-BR&gl=BR&ceid=BR:pt-419`;
         const feed = await parser.parseURL(url);
 
         const totalItems = feed.items.length
-        const articles = feed.items.slice(0, 100).map(item => ({
-            title: item.title,
-            link: item.link,
-            pubDate: item.pubDate,
-            source: item.source,
-            // thumbnail: item.content || null
-        }));
-
+        const articles = await Promise.all(
+            feed.items.slice(0, 100).map(async item => ({
+                title: item.title,
+                link: item.link,
+                // originalLink: await getOriginalUrl(item.link), // Link direto do site original
+                pubDate: item.pubDate,
+                source: item.source,
+                // thumbnail: await getThumbnail(item.link)
+            }))
+        );
         return {
             totalItems,
-            articles
+            articles: articles.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))
         }
+        console.log('Dados coletados com sucesso')
     } catch (error) {
         console.error("Erro:", error);
         return [];
     }
 }
 (async () => {
-    const noticias = await buscarNoticias();
+    const noticias = await searchNews();
     fs.writeFileSync('gameNews.json', JSON.stringify(noticias, null, 2))
 
     console.log('arquivos salvos');
