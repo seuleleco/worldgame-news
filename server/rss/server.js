@@ -1,5 +1,5 @@
 import Parser from 'rss-parser';
-import fs from 'fs';
+// import fs from 'fs';
 
 const parser = new Parser({
     headers: {
@@ -55,9 +55,9 @@ site:voxel.com.br
         return [];
     }
 }
-(async () => {
-    const noticias = await searchNews();
-    fs.writeFileSync('gameNews.json', JSON.stringify(noticias, null, 2))
-
-    console.log('arquivos salvos');
-})();
+// (async () => {
+//     const noticias = await searchNews();
+//     fs.writeFileSync('gameNews.json', JSON.stringify(noticias, null, 2))
+//
+//     console.log('arquivos salvos');
+// })();
