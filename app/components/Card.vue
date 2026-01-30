@@ -1,13 +1,12 @@
 <template>
   <div class="col-7 col-md-5 col-lg-3 mb-4 mt-5 card-content">
     <div class="card h-100">
-      <small class="card-date">Data de publicação:</small>
-      <small class="mb-1 card-date">{{ formatDate(article.pubDate) }}</small>
       <div class="card-body d-flex flex-column justify-content-center text-center">
         <h5 class="card-title">{{ article.title }}</h5>
       </div>
         <a :href="article.link" class="bt btn-primary" target="_blank">Ler mais...</a>
-
+      <small class="card-date">Data da publicação:</small>
+      <small class="card-date">{{ formatDate(article.pubDate) }}</small>
     </div>
   </div>
 </template>
@@ -27,8 +26,9 @@ const formatDate = (date) => {
 
 <style scoped>
 .card {
-  background-image: linear-gradient(#0a2540);
+  background-image: linear-gradient(#0a2540, #232323);
   max-width: 261px;
+  min-width: 250px;
  /* border: 1px solid aqua;*/
   border-radius: 15px;
   padding: 20px;
@@ -55,6 +55,7 @@ const formatDate = (date) => {
 .card-date {
   color: #e5e7eb ;
   font-style: italic;
+  font-size: 12px;
 }
 
 .btn-primary{

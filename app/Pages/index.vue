@@ -14,7 +14,7 @@
       #005171 85%,
       #131334 100%
   );*/
-  background-color: firebrick;
+  background-color: #0f172a;
   min-height: 100vh;
 }
 </style>
