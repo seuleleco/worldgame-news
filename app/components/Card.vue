@@ -4,14 +4,15 @@
       <div class="card-body d-flex flex-column justify-content-center text-center">
         <h5 class="card-title">{{ article.title }}</h5>
       </div>
-        <a :href="article.link" class="bt btn-primary" target="_blank">Ler mais...</a>
-      <small class="card-date">Data da publicação:</small>
+      <a :href="article.link" class="bt btn-primary" target="_blank">Ler mais...</a>
       <small class="card-date">{{ formatDate(article.pubDate) }}</small>
     </div>
   </div>
 </template>
 
 <script setup>
+import {motion} from "motion-v";
+
 defineProps({
   article: {
     type: Object,
@@ -19,7 +20,13 @@ defineProps({
   }
 })
 const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('pt-BR')
+  return new Date(date).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 </script>
@@ -46,7 +53,7 @@ const formatDate = (date) => {
   background-image: linear-gradient(#0a2540, #232323);
   max-width: 261px;
   min-width: 250px;
- /* border: 1px solid aqua;*/
+  /* border: 1px solid aqua;*/
   border-radius: 15px;
   padding: 20px;
   display: flex;
@@ -55,8 +62,6 @@ const formatDate = (date) => {
   align-items: center;
   text-align: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-
-
 }
 
 .card-title {
@@ -68,7 +73,6 @@ const formatDate = (date) => {
 
 .card-content {
   margin-left: 20px;
-
 }
 
 .card-date {
