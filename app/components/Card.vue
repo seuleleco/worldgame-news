@@ -1,10 +1,11 @@
 <template>
-  <div class="col-md-4 col-lg-3 mb-4">
+  <div class="col-7 col-md-5 col-lg-3 mb-4 mt-5 card-content">
     <div class="card h-100">
+      <small class="card-date">Data de publicação:</small>
+      <small class="mb-1 card-date">{{ formatDate(article.pubDate) }}</small>
       <div class="card-body d-flex flex-column justify-content-center text-center">
-      <h5 class="card-title">{{ article.title }}</h5>
-      <a :href="article.link" class="bt btn-primary" target="_blank">Ler mais...</a>
-      <small class="text-muted mt-2">{{ formatDate(article.pubDate) }}</small>
+        <h5 class="card-title">{{ article.title }}</h5>
+        <a :href="article.link" class="bt btn-primary" target="_blank">Ler mais...</a>
       </div>
     </div>
   </div>
@@ -25,10 +26,10 @@ const formatDate = (date) => {
 
 <style scoped>
 .card {
-  width: 250px;
-  height: 250px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  background-image: linear-gradient(#261f1f, #06050c);
+  max-width: 261px;
+ /* border: 1px solid aqua;*/
+  border-radius: 15px;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -42,7 +43,21 @@ const formatDate = (date) => {
   font-size: 1.2rem;
   font-weight: bold;
   margin-bottom: 15px;
-  color: #333;
+  color: white;
+}
+
+.card-content {
+  margin-left: 20px;
+
+}
+
+.card-date {
+  color: white;
+  font-style: italic;
+}
+
+.btn-primary{
+  color: #7bc3ff;
 }
 
 </style>
