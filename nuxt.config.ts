@@ -5,6 +5,7 @@ export default defineNuxtConfig({
             allowedHosts: true
         }
     },
+    css: ['bootstrap/dist/css/bootstrap.min.css'],
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true }
 })

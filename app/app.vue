@@ -1,5 +1,8 @@
 <template>
   <div>
-    <Card/>
+    <index/>
   </div>
 </template>
+<script setup lang="ts">
+import Index from "~/Pages/index.vue";
+</script>
