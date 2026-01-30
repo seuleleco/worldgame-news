@@ -1,19 +1,20 @@
 <template>
   <div class="components">
-    <Header/>
+<!--    <Header/>-->
     <CardList/>
   </div>
 </template>
 
 <style>
 .components {
-  background-image: repeating-linear-gradient(
+ /* background-image: repeating-linear-gradient(
       #131334 0%,
       #005171 15%,
       #131334 50%,
       #005171 85%,
       #131334 100%
-  );
+  );*/
+  background-color: firebrick;
   min-height: 100vh;
 }
 </style>
