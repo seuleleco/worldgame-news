@@ -25,6 +25,23 @@ const formatDate = (date) => {
 </script>
 
 <style scoped>
+.card-content {
+  @media (max-width: 475px) {
+    margin-left: 50px;
+    margin-right: 50px;
+  }
+
+  @media (max-width: 400px) {
+    margin-left: 60px;
+    margin-right: 60px;
+  }
+
+  @media (max-width: 360px) {
+    margin-left: 70px;
+    margin-right: 70px;
+  }
+}
+
 .card {
   background-image: linear-gradient(#0a2540, #232323);
   max-width: 261px;
@@ -38,6 +55,8 @@ const formatDate = (date) => {
   align-items: center;
   text-align: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+
 }
 
 .card-title {
