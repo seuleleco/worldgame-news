@@ -1,30 +1,23 @@
 <template>
   <div class="col-7 col-md-5 col-lg-3 mb-4 mt-5 card-content">
-    <Motion
+    <div
         ref="cardRef"
         class="card h-100"
         @mousemove="handleMouseMove"
         @mouseleave="handleMouseLeave"
-        :animate="{
-        rotateX: rotateX,
-        rotateY: rotateY,
-        boxShadow: isHovered ? '0 20px 40px rgba(5, 242, 179, 0.3)' : '0 2px 4px rgba(0,0,0,0.1)'
-      }"
-        :transition="{ duration: 0.1 }"
-        :style="{ perspective: '1000px' }"
+        :style="cardStyle"
     >
       <div class="card-body d-flex flex-column justify-content-center text-center">
         <h5 class="card-title">{{ article.title }}</h5>
       </div>
       <a :href="article.link" class="bt btn-primary mb-4" target="_blank">Ler mais...</a>
       <small class="card-date">{{ formatDate(article.pubDate) }}</small>
-    </Motion>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { Motion } from 'motion-v';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 defineProps({
   article: {
@@ -37,6 +30,12 @@ const cardRef = ref(null);
 const rotateX = ref(0);
 const rotateY = ref(0);
 const isHovered = ref(false);
+
+const cardStyle = computed(() => ({
+  transform: `perspective(1000px) rotateX(${rotateX.value}deg) rotateY(${rotateY.value}deg)`,
+  boxShadow: isHovered.value ? '0 20px 40px rgba(5, 242, 179, 0.3)' : '0 2px 4px rgba(0,0,0,0.1)',
+  transition: 'transform 0.1s ease, box-shadow 0.1s ease'
+}));
 
 const handleMouseMove = (e) => {
   const rect = e.currentTarget.getBoundingClientRect();
@@ -68,8 +67,6 @@ const formatDate = (date) => {
 }
 </script>
 
-
-
 <style scoped>
 .card-content {
   @media (max-width: 475px) {
@@ -99,7 +96,6 @@ const formatDate = (date) => {
   justify-content: space-between;
   align-items: center;
   text-align: center;
-  transition: transform 0.1s ease;
 }
 
 .card-title {
@@ -114,15 +110,14 @@ const formatDate = (date) => {
 }
 
 .card-date {
-  color: #e5e7eb ;
+  color: #e5e7eb;
   font-style: italic;
   font-size: 12px;
   position: absolute;
   bottom: 7px;
 }
 
-.btn-primary{
+.btn-primary {
   color: #7bc3ff;
 }
-
 </style>
