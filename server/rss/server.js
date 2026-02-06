@@ -7,6 +7,25 @@ const parser = new Parser({
     }
 });
 
+async function decodeGoogleNewsUrl(googleUrl) {
+    try {
+        const response = await fetch("http://localhost:5000/decode", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ url: googleUrl })
+        });
+
+        const data = await response.json();
+        return data.status ? data.original_url : googleUrl;
+    } catch (err) {
+        console.error("Erro ao decodificar URL:", err);
+        return googleUrl;
+    }
+}
+
+
 export async function searchNews(termo) {
     try {
         const query = `
@@ -36,15 +55,19 @@ site:voxel.com.br
 
         const totalItems = feed.items.length
         const articles = await Promise.all(
-            feed.items.slice(0, 100).map(async item => ({
-                title: item.title,
-                link: item.link,
-                // originalLink: await getOriginalUrl(item.link), // Link direto do site original
-                pubDate: item.pubDate,
-                source: item.source,
-                // thumbnail: await getThumbnail(item.link)
-            }))
-        );
+    feed.items.slice(0, 100).map(async item => {
+        const originalLink = await decodeGoogleNewsUrl(item.link);
+
+        return {
+            title: item.title,
+            link: originalLink,       // agora é o link real
+            googleLink: item.link,    // opcional, pra debug
+            pubDate: item.pubDate,
+            source: item.source
+        };
+    })
+);
+
         return {
             totalItems,
             articles: articles.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))
