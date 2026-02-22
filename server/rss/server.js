@@ -1,11 +1,31 @@
 import Parser from 'rss-parser';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 // import fs from 'fs';
+
+const execAsync = promisify(exec);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const parser = new Parser({
     headers: {
         "User-Agent": "Mozilla/5.0 (Node.js RSS Reader)"
     }
 });
+
+async function getOriginalUrl(googleNewsUrl) {
+    try {
+        const pythonScript = join(__dirname, '../py/main.py');
+        const { stdout } = await execAsync(`python3 "${pythonScript}" "${googleNewsUrl}"`);
+        const result = JSON.parse(stdout);
+        return result.decoded_url || result.url || googleNewsUrl;
+    } catch (error) {
+        console.error("Erro ao decodificar URL:", error);
+        return googleNewsUrl;
+    }
+}
 
 export async function searchNews(termo) {
     try {
@@ -39,7 +59,7 @@ site:voxel.com.br
             feed.items.slice(0, 100).map(async item => ({
                 title: item.title,
                 link: item.link,
-                // originalLink: await getOriginalUrl(item.link), // Link direto do site original
+                originalLink: await getOriginalUrl(item.link), // Link direto do site original
                 pubDate: item.pubDate,
                 source: item.source,
                 // thumbnail: await getThumbnail(item.link)
