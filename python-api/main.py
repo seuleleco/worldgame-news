@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
-from googlenewsdecoder import gnewsdecoder
+from googlenewsdecoder import new_decoderv1
 from flask_cors import CORS
+from newspaper import Article
 
 app = Flask(__name__)
 CORS(app)
@@ -15,11 +16,17 @@ def decode_url():
         return jsonify({'status': False, 'message': 'URL é obrigatória'})
 
     try:
-        decoded_url = gnewsdecoder(source_url, interval=1)
+        decoded_url = new_decoderv1(source_url, interval=1)
+        article_url = decoded_url["decoded_url"]
+        article = Article(article_url)
+        article.download()
+        article.parse()
+
         return jsonify({
-    "status": True,
-    "original_url": decoded_url["decoded_url"]
-})
+            "status": True,
+            "original_url": article_url,
+            "image": article.top_image
+        })
     except Exception as e:
         return jsonify({'status': False, 'message': f'Erro: {str(e)}'})
 

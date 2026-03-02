@@ -18,10 +18,10 @@ async function decodeGoogleNewsUrl(googleUrl) {
         });
 
         const data = await response.json();
-        return data.status ? data.original_url : googleUrl;
+        return data.status ? { url: data.original_url, image: data.image } : { url: googleUrl, image: null };
     } catch (err) {
         console.error("Erro ao decodificar URL:", err);
-        return googleUrl;
+        return { url: googleUrl, image: null };
     }
 }
 
@@ -52,22 +52,19 @@ site:voxel.com.br
 `;
         const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=pt-BR&gl=BR&ceid=BR:pt-419`;
         const feed = await parser.parseURL(url);
-
         const totalItems = feed.items.length
         const articles = await Promise.all(
-    feed.items.slice(0, 100).map(async item => {
-        const originalLink = await decodeGoogleNewsUrl(item.link);
-
-        return {
-            title: item.title,
-            link: originalLink,       // agora é o link real
-            googleLink: item.link,    // opcional, pra debug
-            pubDate: item.pubDate,
-            source: item.source
-        };
-    })
-);
-
+            feed.items.slice(0, 100).map(async item => {
+                const decoded = await decodeGoogleNewsUrl(item.link);
+                return {
+                    title: item.title,
+                    url: decoded.url,
+                    image: decoded.image,
+                    pubDate: item.pubDate,
+                    source: item.source
+                };
+            })
+        );
         return {
             totalItems,
             articles: articles.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))

@@ -7,10 +7,13 @@
         @mouseleave="handleMouseLeave"
         :style="cardStyle"
     >
+      <div v-if="article.image" class="card-image">
+        <img :src="article.image" :alt="article.title"/>
+      </div>
       <div class="card-body d-flex flex-column justify-content-center text-center">
         <h5 class="card-title">{{ article.title }}</h5>
       </div>
-      <a :href="article.link" class="bt btn-primary mb-4" target="_blank">Ler mais...</a>
+      <a :href="article.url" class="bt btn-primary mb-4" target="_blank">Ler mais...</a>
       <small class="card-date">{{ formatDate(article.pubDate) }}</small>
     </div>
   </div>
@@ -107,6 +110,19 @@ const formatDate = (date) => {
 
 .card-content {
   margin-left: 20px;
+}
+
+.card-image {
+  width: 100%;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.card-image img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
 }
 
 .card-date {

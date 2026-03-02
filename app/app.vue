@@ -1,6 +1,6 @@
 <template>
   <div>
-    <index/>
+    <NuxtPage/>
   </div>
 </template>
 <script>
