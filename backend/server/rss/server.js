@@ -1,5 +1,12 @@
 import Parser from 'rss-parser';
-// import fs from 'fs';
+import express from 'express';
+import cors from 'cors';
+import { spawn } from 'child_process';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const parser = new Parser({
     headers: {
@@ -8,21 +15,35 @@ const parser = new Parser({
 });
 
 async function decodeGoogleNewsUrl(googleUrl) {
-    try {
-        const response = await fetch("http://localhost:5000/decode", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ url: googleUrl })
+    return new Promise((resolve) => {
+        const pythonScript = join(__dirname, '../pydecoder/main.py');
+        const python = spawn('python3', [pythonScript, googleUrl]);
+
+        let stdout = '';
+        let stderr = '';
+
+        python.stdout.on('data', (data) => {
+            stdout += data.toString();
         });
 
-        const data = await response.json();
-        return data.status ? { url: data.original_url, image: data.image } : { url: googleUrl, image: null };
-    } catch (err) {
-        console.error("Erro ao decodificar URL:", err);
-        return { url: googleUrl, image: null };
-    }
+        python.stderr.on('data', (data) => {
+            stderr += data.toString();
+        });
+
+        python.on('close', (code) => {
+            if (code === 0 && stdout.trim()) {
+                try {
+                    const result = JSON.parse(stdout.trim());
+                    resolve({ url: result.url, image: result.image });
+                } catch {
+                    resolve({ url: stdout.trim(), image: null });
+                }
+            } else {
+                console.error("Erro ao decodificar URL:", stderr);
+                resolve({ url: googleUrl, image: null });
+            }
+        });
+    });
 }
 
 const ALLOWED_SITES = [
@@ -126,9 +147,27 @@ export async function searchNews(termo) {
     }
 }
 
-// (async () => {
-//     const noticias = await searchNews();
-//     fs.writeFileSync('gameNews.json', JSON.stringify(noticias, null, 2))
-//
-//     console.log('arquivos salvos');
-// })();
+const app = express();
+const PORT = process.env.PORT || 7000;
+
+app.use(cors());
+app.use(express.json());
+
+let cache = null;
+let lastFetch = 0;
+const CACHE_DURATION = 5 * 60 * 1000;
+
+app.get('/api/news', async (req, res) => {
+    const now = Date.now();
+
+    if (!cache || (now - lastFetch) > CACHE_DURATION) {
+        cache = await searchNews();
+        lastFetch = now;
+    }
+
+    res.json(cache);
+});
+
+app.listen(PORT, () => {
+    console.log(`Servidor rodando em http://localhost:${PORT}`);
+});

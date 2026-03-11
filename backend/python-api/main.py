@@ -2,10 +2,10 @@ from flask import Flask, request, jsonify
 from googlenewsdecoder import new_decoderv1
 from flask_cors import CORS
 from newspaper import Article
+import os
 
 app = Flask(__name__)
 CORS(app)
-
 
 @app.route('/decode', methods=['POST'])
 def decode_url():
@@ -31,4 +31,5 @@ def decode_url():
         return jsonify({'status': False, 'message': f'Erro: {str(e)}'})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Python roda em porta fixa interna (5000)
+    app.run(host="0.0.0.0", port=5000, debug=False)
