@@ -7,6 +7,9 @@ export default defineNuxtConfig({
     },
     modules: ['motion-v/nuxt'],
     css: ['bootstrap/dist/css/bootstrap.min.css'],
-  compatibilityDate: '2025-07-15',
-  devtools: { enabled: true }
+    compatibilityDate: '2025-07-15',
+    devtools: { enabled: true },
+    nitro: {
+        preset: 'node-server'
+    }
 })

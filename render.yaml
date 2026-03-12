@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: worldgame-news
+    env: node
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: chmod +x start.sh && ./start.sh

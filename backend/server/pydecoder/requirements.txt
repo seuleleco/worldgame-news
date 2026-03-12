@@ -1,0 +1,3 @@
+googlenewsdecoder
+newspaper3k
+lxml
