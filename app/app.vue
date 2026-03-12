@@ -1,5 +1,7 @@
 <template>
   <div>
-    <Card/>
+    <NuxtPage/>
   </div>
 </template>
+<script>
+</script>
