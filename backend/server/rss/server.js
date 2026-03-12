@@ -1,50 +1,12 @@
 import Parser from 'rss-parser';
 import express from 'express';
 import cors from 'cors';
-import { spawn } from 'child_process';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const parser = new Parser({
     headers: {
-        "User-Agent": "Mozilla/5.0 (Node.js RSS Reader)"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
 });
-
-async function decodeGoogleNewsUrl(googleUrl) {
-    return new Promise((resolve) => {
-        const pythonScript = join(__dirname, '../pydecoder/main.py');
-        const python = spawn('python3', [pythonScript, googleUrl]);
-
-        let stdout = '';
-        let stderr = '';
-
-        python.stdout.on('data', (data) => {
-            stdout += data.toString();
-        });
-
-        python.stderr.on('data', (data) => {
-            stderr += data.toString();
-        });
-
-        python.on('close', (code) => {
-            if (code === 0 && stdout.trim()) {
-                try {
-                    const result = JSON.parse(stdout.trim());
-                    resolve({ url: result.url, image: result.image });
-                } catch {
-                    resolve({ url: stdout.trim(), image: null });
-                }
-            } else {
-                console.error("Erro ao decodificar URL:", stderr);
-                resolve({ url: googleUrl, image: null });
-            }
-        });
-    });
-}
 
 const ALLOWED_SITES = [
     'br.ign.com',
@@ -111,38 +73,79 @@ ${blockedTerms}
 `;
 }
 
-export async function searchNews(termo) {
+async function fetchBingNews(query) {
     try {
-        const query = buildSearchQuery();
-        const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=pt-BR&gl=BR&ceid=BR:pt-419`;
+        const url = `https://www.bing.com/news/search?q=${encodeURIComponent(query)}&format=RSS&count=100qft=interval:"7"`;
         const feed = await parser.parseURL(url);
 
-        const now = new Date();
-        const thirtyDaysAgo = new Date(now.getTime() - (365 * 24 * 60 * 60 * 1000));
+        return feed.items.map(item => ({
+            title: item.title,
+            url: item.link,
+            image: item.enclosure?.url || item['media:thumbnail']?.$?.url || null,
+            pubDate: item.pubDate || item.isoDate,
+            source: item.source?._ || item.source || 'Bing News'
+        }));
+    } catch (error) {
+        console.error(`Erro ao buscar "${query}":`, error.message);
+        return [];
+    }
+}
 
-        const articles = await Promise.all(
-            feed.items.slice(0, 500).map(async item => {
-                const decoded = await decodeGoogleNewsUrl(item.link);
-                return {
-                    title: item.title,
-                    url: decoded.url,
-                    image: decoded.image,
-                    pubDate: item.pubDate,
-                    source: item.source
-                };
-            })
+export async function searchNews() {
+    try {
+        // Múltiplas buscas com termos diferentes
+        const queries = [
+            'videogames',
+            'video games lançamento',
+            'jogos eletrônicos',
+            'PlayStation',
+            'Xbox',
+            'Nintendo',
+            'PC games',
+            'gaming notícias',
+            'game updates',
+            'novos jogos',
+            'jogos de video game"',
+            'videogame',
+            'video game',
+            'games',
+
+        ];
+
+        console.log('Buscando notícias em múltiplas fontes...');
+
+        // Buscar todas as queries em paralelo
+        const results = await Promise.all(queries.map(q => fetchBingNews(q)));
+
+        // Combinar todos os resultados
+        const allArticles = results.flat();
+        console.log('Total de artigos coletados:', allArticles.length);
+
+        // Remover duplicatas por URL
+        const uniqueArticles = Array.from(
+            new Map(allArticles.map(article => [article.url, article])).values()
         );
+        console.log('Artigos únicos:', uniqueArticles.length);
 
-        const filteredArticles = articles
-            .filter(article => new Date(article.pubDate) >= thirtyDaysAgo)
-            .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+        const now = new Date();
+        const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+
+        const filteredArticles = uniqueArticles
+            .filter(article => {
+                const articleDate = new Date(article.pubDate);
+                return articleDate >= thirtyDaysAgo;
+            })
+            .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))
+            .slice(0, 100);
+
+        console.log('Artigos filtrados:', filteredArticles.length);
 
         return {
             totalItems: filteredArticles.length,
             articles: filteredArticles
         };
     } catch (error) {
-        console.error("Erro:", error);
+        console.error("Erro completo:", error);
         return { totalItems: 0, articles: [] };
     }
 }
