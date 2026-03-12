@@ -1,9 +1,6 @@
 import Parser from 'rss-parser';
 import express from 'express';
 import cors from 'cors';
-import { spawn } from 'child_process';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -15,35 +12,27 @@ const parser = new Parser({
 });
 
 async function decodeGoogleNewsUrl(googleUrl) {
-    return new Promise((resolve) => {
-        const pythonScript = join(__dirname, '../pydecoder/main.py');
-        const python = spawn('python3', [pythonScript, googleUrl]);
-
-        let stdout = '';
-        let stderr = '';
-
-        python.stdout.on('data', (data) => {
-            stdout += data.toString();
+    try {
+        const response = await fetch('http://localhost:5000/decode', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url: googleUrl })
         });
 
-        python.stderr.on('data', (data) => {
-            stderr += data.toString();
-        });
+        const data = await response.json();
 
-        python.on('close', (code) => {
-            if (code === 0 && stdout.trim()) {
-                try {
-                    const result = JSON.parse(stdout.trim());
-                    resolve({ url: result.url, image: result.image });
-                } catch {
-                    resolve({ url: stdout.trim(), image: null });
-                }
-            } else {
-                console.error("Erro ao decodificar URL:", stderr);
-                resolve({ url: googleUrl, image: null });
-            }
-        });
-    });
+        if (data.status) {
+            return { url: data.original_url, image: data.image };
+        } else {
+            console.error("Erro ao decodificar URL:", data.message);
+            return { url: googleUrl, image: null };
+        }
+    } catch (error) {
+        console.error("Erro ao chamar Flask:", error);
+        return { url: googleUrl, image: null };
+    }
 }
 
 const ALLOWED_SITES = [
