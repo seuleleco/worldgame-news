@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import Parser from 'rss-parser';
 import express from 'express';
 import cors from 'cors';
@@ -40,6 +41,12 @@ const BLOCKED_TERMS = [
     'cassino'
 ];
 
+const UPSTASH_REDIS_URL = process.env.UPSTASH_REDIS_URL;
+const UPSTASH_REDIS_TOKEN = process.env.UPSTASH_REDIS_TOKEN;
+const REDIS_CACHE_KEY = 'wgn:news:payload';
+const REDIS_LAST_FETCH_KEY = 'wgn:news:lastFetchedAt';
+const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+
 function buildSearchQuery() {
     const gameTerms = [
         '"jogos de video game"',
@@ -73,25 +80,123 @@ ${blockedTerms}
 `;
 }
 
+async function extractImageFromArticle(url) {
+    try {
+        const response = await fetch(url, { redirect: 'follow' });
+        const html = await response.text();
+
+        const ogMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i);
+        if (ogMatch?.[1]) return ogMatch[1];
+
+        const twitterMatch = html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i);
+        if (twitterMatch?.[1]) return twitterMatch[1];
+
+        return null;
+    } catch {
+        return null;
+    }
+}
+
+function getOriginalUrl(bingUrl) {
+    try {
+        const parsed = new URL(bingUrl);
+        const encodedOriginal = parsed.searchParams.get('url');
+        return encodedOriginal ? decodeURIComponent(encodedOriginal) : bingUrl;
+    } catch {
+        return bingUrl;
+    }
+}
+
 async function fetchBingNews(query) {
     try {
-        const url = `https://www.bing.com/news/search?q=${encodeURIComponent(query)}&format=RSS&count=100qft=interval:"7"`;
+        const url = `https://www.bing.com/news/search?q=${encodeURIComponent(query)}&format=RSS&count=100&qft=interval:%227%22`;
         const feed = await parser.parseURL(url);
 
-        return feed.items.map(item => ({
-            title: item.title,
-            url: item.link,
-            image: item.enclosure?.url || item['media:thumbnail']?.$?.url || null,
-            pubDate: item.pubDate || item.isoDate,
-            source: item.source?._ || item.source || 'Bing News'
+        const articles = await Promise.all(feed.items.map(async (item) => {
+            const originalUrl = getOriginalUrl(item.link);
+            const rssImage = item.enclosure?.url || item['media:thumbnail']?.$?.url || null;
+            const image = rssImage || await extractImageFromArticle(originalUrl);
+
+            return {
+                title: item.title,
+                url: originalUrl,
+                image,
+                pubDate: item.pubDate || item.isoDate,
+                source: item.source?._ || item.source || 'Bing News'
+            };
         }));
+
+        return articles;
     } catch (error) {
         console.error(`Erro ao buscar "${query}":`, error.message);
         return [];
     }
 }
 
+async function redisCommand(command, ...args) {
+    if (!UPSTASH_REDIS_URL || !UPSTASH_REDIS_TOKEN) {
+        throw new Error('Redis Tokens são obrigatórios.');
+    }
+    const endpoint = `${UPSTASH_REDIS_URL}/${command}/${args.map(arg => encodeURIComponent(String(arg))).join('/')}`;
+    const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${UPSTASH_REDIS_TOKEN}`
+        }
+    });
+    if (!response.ok) throw new Error(`Redis command failed: ${command}`);
+    const data = await response.json();
+    return data.result;
+}
+
+async function loadCacheFromRedis() {
+    try {
+        const [cachedPayload, lastFetchedRaw] = await Promise.all([
+            redisCommand('get', REDIS_CACHE_KEY),
+            redisCommand('get', REDIS_LAST_FETCH_KEY)
+        ]);
+
+        if (!cachedPayload || !lastFetchedRaw) return null;
+
+        const lastFetchedAt = Number(lastFetchedRaw);
+        if (!Number.isFinite(lastFetchedAt)) return null;
+
+        const age = Date.now() - lastFetchedAt;
+        if (age > TWO_HOURS_MS) return null;
+
+        const parsed = JSON.parse(cachedPayload);
+        return {
+            ...parsed,
+            lastFetchedAt
+        };
+    } catch (error) {
+        console.error('Erro ao ler cache no Redis:', error.message);
+        return null;
+    }
+}
+
+async function saveCacheToRedis(payload) {
+    const lastFetchedAt = Date.now();
+    const enrichedPayload = {
+        ...payload,
+        lastFetchedAt
+    };
+
+    await Promise.all([
+        redisCommand('set', REDIS_CACHE_KEY, JSON.stringify(enrichedPayload)),
+        redisCommand('set', REDIS_LAST_FETCH_KEY, String(lastFetchedAt))
+    ]);
+
+    return enrichedPayload;
+}
+
 export async function searchNews() {
+    const cached = await loadCacheFromRedis();
+    if (cached) {
+        console.log('Retornando notícias do cache Redis.');
+        return cached;
+    }
+
     try {
         // Múltiplas buscas com termos diferentes
         const queries = [
@@ -114,14 +219,11 @@ export async function searchNews() {
 
         console.log('Buscando notícias em múltiplas fontes...');
 
-        // Buscar todas as queries em paralelo
         const results = await Promise.all(queries.map(q => fetchBingNews(q)));
 
-        // Combinar todos os resultados
         const allArticles = results.flat();
         console.log('Total de artigos coletados:', allArticles.length);
 
-        // Remover duplicatas por URL
         const uniqueArticles = Array.from(
             new Map(allArticles.map(article => [article.url, article])).values()
         );
@@ -140,10 +242,12 @@ export async function searchNews() {
 
         console.log('Artigos filtrados:', filteredArticles.length);
 
-        return {
+        const freshPayload = {
             totalItems: filteredArticles.length,
             articles: filteredArticles
         };
+        const saved = await saveCacheToRedis(freshPayload);
+        return saved;
     } catch (error) {
         console.error("Erro completo:", error);
         return { totalItems: 0, articles: [] };

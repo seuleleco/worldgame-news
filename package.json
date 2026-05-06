@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
-    "flask": "python python-api/main.py",
-    "start": "concurrently \"npm run flask\" \"npm run dev\"",
-    "start:prod": "concurrently \"python python-api/main.py\" \"node .output/server/index.mjs\"",
+    "dev": "concurrently \"npm run news-api\" \"nuxt dev\"",
+    "news-api": "node backend/server/rss/server.js",
+    "start": "npm run dev",
+    "start:prod": "concurrently \"npm run news-api\" \"node .output/server/index.mjs\"",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
@@ -15,6 +15,9 @@
   "dependencies": {
     "axios": "^1.13.4",
     "bootstrap": "^5.3.8",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^5.2.1",
     "fs": "^0.0.1-security",
     "motion-v": "^1.10.2",
     "nuxt": "^4.3.0",
