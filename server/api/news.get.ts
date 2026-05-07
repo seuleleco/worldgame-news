@@ -1,6 +1,8 @@
+import { searchNews } from "~~/backend/server/rss/server.js";
+
 export default defineEventHandler(async (event) => {
     try {
-        const response = await $fetch('http://localhost:7000/api/news')
+        const response = await searchNews()
         return response
     } catch (error) {
         throw createError({
