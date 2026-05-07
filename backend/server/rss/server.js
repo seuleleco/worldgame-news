@@ -109,7 +109,7 @@ function getOriginalUrl(bingUrl) {
 
 async function fetchBingNews(query) {
     try {
-        const url = `https://www.bing.com/news/search?q=${encodeURIComponent(query)}&format=RSS&count=100&qft=interval:%227%22`;
+        const url = `https://www.bing.com/news/search?q=${encodeURIComponent(query)}&format=RSS&count=100&qft=interval:%227%22&mkt=pt-BR&setlang=pt-BR&cc=br`;
         const feed = await parser.parseURL(url);
 
         const articles = await Promise.all(feed.items.map(async (item) => {
