@@ -1,4 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+const isVercel = process.env.VERCEL === '1'
+
 export default defineNuxtConfig({
     vite: {
         server: {
@@ -10,6 +12,6 @@ export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
     devtools: { enabled: true },
     nitro: {
-        preset: 'node-server'
+        preset: isVercel ? 'vercel' : 'node-server'
     }
 })
