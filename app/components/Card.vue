@@ -7,8 +7,8 @@
         @mouseleave="handleMouseLeave"
         :style="cardStyle"
     >
-      <div v-if="article.image" class="card-image">
-        <img :src="article.image" :alt="article.title"/>
+      <div class="card-image">
+        <img :src="article.image || '/images/fallback.jpg'" :alt="article.title"/>
       </div>
       <div class="card-body d-flex flex-column justify-content-center text-center">
         <h5 class="card-title">{{ article.title }}</h5>
