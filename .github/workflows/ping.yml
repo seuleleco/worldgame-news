@@ -1,0 +1,19 @@
+name: Ping site
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.SITE_URL }})
+          echo "Status: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "ERRO: site retornou $STATUS"
+            exit 1
+          fi
