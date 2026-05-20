@@ -7,7 +7,11 @@ export default defineNuxtConfig({
             allowedHosts: true
         }
     },
-    modules: ['motion-v/nuxt'],
+    modules: [
+      'motion-v/nuxt',
+      '@nuxt/content',
+      'nuxt-studio'
+    ],
     css: ['bootstrap/dist/css/bootstrap.min.css'],
     compatibilityDate: '2025-07-15',
     devtools: { enabled: true },

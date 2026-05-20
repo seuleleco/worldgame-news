@@ -3,6 +3,7 @@
     <div
         class="headerContainer d-flex align-items-center justify-content-center gap-3 mb-5"
     >
+<!--      <h1>{{ item.text }}</h1>-->
     </div>
   </header>
 </template>
