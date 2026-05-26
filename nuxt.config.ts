@@ -13,5 +13,16 @@ export default defineNuxtConfig({
     devtools: { enabled: true },
     nitro: {
         preset: isVercel ? 'vercel' : 'node-server'
-    }
+    },
+    app: {
+        head: {
+          title: 'World Game News',
+          meta: [
+            { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' }
+          ],
+          link: [
+            { rel: 'icon', type: 'image/png', href: '/images/icon.png' }
+          ]
+        }
+      }
 })
