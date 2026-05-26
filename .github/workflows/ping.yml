@@ -8,10 +8,11 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Ping
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.SITE_URL }})
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 120 "https://worldgame-news.vercel.app/api/news")
           echo "Status: $STATUS"
           if [ "$STATUS" != "200" ]; then
             echo "ERRO: site retornou $STATUS"
