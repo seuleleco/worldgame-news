@@ -1,6 +1,6 @@
 <template>
   <div class="components">
-<!--    <Header/>-->
+    <Header/>
     <CardList/>
   </div>
 </template>
